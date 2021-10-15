@@ -180,14 +180,14 @@ mod tests {
         counter: &Arc<AtomicU32>,
         barrier: Option<&Arc<Mutex<()>>>,
     ) -> JoinHandle<()> {
-        let pool = Arc::clone(&pool);
-        let counter = Arc::clone(&counter);
+        let pool = Arc::clone(pool);
+        let counter = Arc::clone(counter);
         let barrier = barrier.map(Arc::clone);
         thread::spawn(move || {
             let _guard = pool.lock(key);
             counter.fetch_add(1, Ordering::SeqCst);
             if let Some(barrier) = barrier {
-                let _ = barrier.lock().unwrap();
+                let _barrier = barrier.lock().unwrap();
             }
         })
     }
