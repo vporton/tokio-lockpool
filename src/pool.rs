@@ -451,7 +451,9 @@ mod tests {
         assert_eq!(0, counter.load(Ordering::SeqCst));
 
         // Check that we can stil lock other locks while the child is waiting
-        pool.lock(4).unwrap();
+        {
+            let _g = pool.lock(4).unwrap();
+        }
 
         // Now free the lock so the child can get it
         std::mem::drop(guard);
@@ -472,13 +474,17 @@ mod tests {
         assert!(matches!(error, TryLockError::WouldBlock));
 
         // Check that we can stil lock other locks while the child is waiting
-        pool.try_lock(4).unwrap();
+        {
+            let _g = pool.try_lock(4).unwrap();
+        }
 
         // Now free the lock so the we can get it again
         std::mem::drop(guard);
 
         // And check that we can get it again
-        pool.try_lock(5).unwrap();
+        {
+            let _g = pool.try_lock(5).unwrap();
+        }
 
         assert_eq!(0, pool.num_locked_or_poisoned());
     }
@@ -500,7 +506,9 @@ mod tests {
         assert_eq!(0, counter.load(Ordering::SeqCst));
 
         // Check that we can stil lock other locks while the children are waiting
-        pool.lock(4).unwrap();
+        {
+            let _g = pool.lock(4).unwrap();
+        }
 
         // Now free the lock so a child can get it
         std::mem::drop(guard);
@@ -638,8 +646,12 @@ mod tests {
         pool.unpoison(3).unwrap();
 
         // Check that it got unpoisoned
-        pool.lock(3).unwrap();
-        pool.try_lock(3).unwrap();
+        {
+            let _g = pool.lock(3).unwrap();
+        }
+        {
+            let _g = pool.try_lock(3).unwrap();
+        }
     }
 
     #[test]
@@ -665,6 +677,8 @@ mod tests {
         pool.unpoison(3).unwrap();
 
         // Check that it got unpoisoned
-        pool.lock(3).unwrap();
+        {
+            let _g = pool.lock(3).unwrap();
+        }
     }
 }
