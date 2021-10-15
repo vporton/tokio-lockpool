@@ -163,8 +163,8 @@ where
         let mut currently_locked = self._currently_locked();
         let mutex: &Arc<Mutex<()>> = currently_locked
             .get(&key)
-            .ok_or_else(|| UnpoisonError::NotPoisoned)?;
-        if Arc::strong_count(&mutex) != 1 {
+            .ok_or(UnpoisonError::NotPoisoned)?;
+        if Arc::strong_count(mutex) != 1 {
             return Err(UnpoisonError::OtherThreadsBlockedOnMutex);
         }
         let result = match Arc::clone(mutex).lock() {
