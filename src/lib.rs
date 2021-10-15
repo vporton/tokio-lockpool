@@ -1,3 +1,5 @@
+//! This library offers a pool of locks where individual locks can be locked/unlocked by key
+
 use owning_ref::OwningHandle;
 use std::collections::HashMap;
 use std::hash::Hash;
