@@ -2,7 +2,7 @@
 authors = ["Sebastian Messmer <messmer@cryfs.org>"]
 edition = "2018"
 name = "lockpool"
-version = "0.2.0"
+version = "0.3.0"
 readme = "README.md"
 documentation = "https://docs.rs/lockpool"
 homepage = "https://github.com/smessmer/lockpool"
