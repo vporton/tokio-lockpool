@@ -10,21 +10,30 @@ where
     currently_locked: Mutex<HashMap<K, Arc<Mutex<()>>>>,
 }
 
+impl<K> Default for LockPool<K>
+where
+    K: Eq + PartialEq + Hash + Clone,
+{
+    fn default() -> Self {
+        Self {
+            currently_locked: Mutex::new(HashMap::new()),
+        }
+    }
+}
+
 impl<K> LockPool<K>
 where
     K: Eq + PartialEq + Hash + Clone,
 {
     pub fn new() -> Self {
-        Self {
-            currently_locked: Mutex::new(HashMap::new()),
-        }
+        Self::default()
     }
 
     pub fn num_locked(&self) -> usize {
         self.currently_locked.lock().expect("Poisoned mutex").len()
     }
 
-    pub fn lock<'a>(&'a self, key: K) -> Guard<'a, K> {
+    pub fn lock(&self, key: K) -> Guard<'_, K> {
         // TODO Return Result instead of expect()
         let mut currently_locked = self.currently_locked.lock().expect("Poisoned mutex");
         if let Some(mutex) = currently_locked.get_mut(&key).map(|a| Arc::clone(a)) {
@@ -36,7 +45,7 @@ where
                 let mutex: &Mutex<()> = unsafe { &*mutex };
                 mutex.lock().expect("Poisoned mutex")
             });
-            Guard::new(&self, key, guard)
+            Guard::new(self, key, guard)
         } else {
             let insert_result = currently_locked.insert(key.clone(), Arc::new(Mutex::new(())));
             assert!(
@@ -52,7 +61,7 @@ where
                 let mutex: &Mutex<()> = unsafe { &*mutex };
                 mutex.lock().expect("Poisoned mutex")
             });
-            Guard::new(&self, key, guard)
+            Guard::new(self, key, guard)
         }
     }
 
