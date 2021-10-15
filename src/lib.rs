@@ -165,7 +165,7 @@ where
                 "We just checked that the entry doesn't exist, why does it exist now?"
             );
             currently_locked
-                .get_mut(&key)
+                .get_mut(key)
                 .map(|a| Arc::clone(a))
                 .expect("We just inserted this")
         }
