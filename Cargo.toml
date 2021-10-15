@@ -21,3 +21,11 @@ thiserror = "^1.0.29"
 
 [dev-dependencies]
 criterion = "^0.3.5"
+crossbeam-utils = "^0.8.1"
+
+[[bench]]
+name = "bench"
+harness = false
+
+[profile.release]
+lto = "fat"
