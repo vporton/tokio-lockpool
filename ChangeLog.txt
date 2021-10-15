@@ -1,7 +1,8 @@
 0.3.0 (unreleased)
 ------
 - Correctly poison the locks when a thread holding one panics
-- Don't panic when mutexes are poisoned, but return an Error
+- Don't panic when mutexes are poisoned, but return an Error. The returned error acts as a guard with a lock on the mutex.
+- Add LockPool::unpoison()
 - Restructure code
 
 0.2.0
