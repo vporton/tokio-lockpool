@@ -15,27 +15,27 @@ and if a second thread tries to acquire a lock for the same key, they will have 
 use lockpool::LockPool;
 
 let pool = LockPool::new();
-let guard1 = pool.lock(4);
-let guard2 = pool.lock(5);
+let guard1 = pool.lock(4).unwrap();
+let guard2 = pool.lock(5).unwrap();
 
 // This next line would cause a deadlock because `4` is already locked
-// let guard3 = pool.lock(4);
+// let guard3 = pool.lock(4).unwrap();
 
 // After dropping the corresponding guard, we can lock it again
 std::mem::drop(guard1);
-let guard3 = pool.lock(4);
+let guard3 = pool.lock(4).unwrap();
 ```
 
-You can use an arbitrary type to index locks by, as long as that type implements [PartialEq](https://docs.rs/tokenpool/latest/binary_layout/struct.PartialEq.html) + [Eq](https://docs.rs/tokenpool/latest/binary_layout/struct.Eq.html) + [Hash](https://docs.rs/tokenpool/latest/binary_layout/struct.Hash.html) + [Clone](https://docs.rs/tokenpool/latest/binary_layout/struct.Clone.html).
+You can use an arbitrary type to index locks by, as long as that type implements [PartialEq](https://docs.rs/tokenpool/latest/binary_layout/struct.PartialEq.html) + [Eq](https://docs.rs/tokenpool/latest/binary_layout/struct.Eq.html) + [Hash](https://docs.rs/tokenpool/latest/binary_layout/struct.Hash.html) + [Clone](https://docs.rs/tokenpool/latest/binary_layout/struct.Clone.html) + [Debug](https://docs.rs/tokenpool/latest/binary_layout/struct.Debug.html).
 
 ```rust
 use lockpool::LockPool;
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 struct CustomLockKey(u32);
 
 let pool = LockPool::new();
-let guard = pool.lock(CustomLockKey(4));
+let guard = pool.lock(CustomLockKey(4)).unwrap();
 ```
 
 Under the hood, a [LockPool](https://docs.rs/tokenpool/latest/binary_layout/struct.LockPool.html) is a [HashMap](https://docs.rs/tokenpool/latest/binary_layout/struct.HashMap.html) of [Mutex](https://docs.rs/tokenpool/latest/binary_layout/struct.Mutex.html)es, with some logic making sure there aren't any race conditions when accessing the hash map.
