@@ -46,10 +46,8 @@ use std::sync::{Arc, Mutex, MutexGuard};
 mod error;
 mod guard;
 
-pub use error::{PoisonError, UnpoisonError};
+pub use error::{PoisonError, TryLockError, UnpoisonError};
 pub use guard::Guard;
-
-// TODO Implement .try_lock()
 
 /// This is a pool of locks where individual locks can be locked/unlocked by key. It initially considers all keys as "unlocked", but they can be locked
 /// and if a second thread tries to acquire a lock for the same key, they will have to wait.
@@ -147,6 +145,40 @@ where
         self._lock(key, mutex)
     }
 
+    /// Attempts to acquire the lock with the given key.
+    ///
+    /// If the lock could not be acquired at this time, then [Err] is returned. Otherwise, a RAII guard is returned.
+    /// The lock will be unlocked when the guard is dropped.
+    ///
+    /// This function does not block.
+    ///
+    /// Errors
+    /// -----
+    /// - If another user of this lock panicked while holding the lock, then this call will return [TryLockError::Poisoned].
+    /// - If the lock could not be acquired because it is already locked, then this call will return [TryLockError::WouldBlock].
+    ///
+    /// Examples
+    /// -----
+    /// ```
+    /// use lockpool::{TryLockError, LockPool};
+    ///
+    /// let pool = LockPool::new();
+    /// let guard1 = pool.lock(4);
+    /// let guard2 = pool.lock(5);
+    ///
+    /// // This next line would cause a deadlock or panic because `4` is already locked on this thread
+    /// let guard3 = pool.try_lock(4);
+    /// assert!(matches!(guard3.unwrap_err(), TryLockError::WouldBlock));
+    ///
+    /// // After dropping the corresponding guard, we can lock it again
+    /// std::mem::drop(guard1);
+    /// let guard3 = pool.lock(4);
+    /// ```
+    pub fn try_lock(&self, key: K) -> Result<Guard<'_, K>, TryLockError<K, Guard<'_, K>>> {
+        let mutex = self._load_or_insert_mutex_for_key(&key);
+        self._try_lock(key, mutex)
+    }
+
     /// Unpoisons a poisoned lock.
     ///
     /// Generally, once a thread panics while a lock is held, that lock is poisoned forever and all future attempts at locking it will return a [PoisonError].
@@ -226,6 +258,35 @@ where
         if poisoned {
             let guard = Guard::new(self, key.clone(), guard, true);
             Err(PoisonError::LockPoisoned { key, guard })
+        } else {
+            let guard = Guard::new(self, key, guard, false);
+            Ok(guard)
+        }
+    }
+
+    fn _try_lock(
+        &self,
+        key: K,
+        mutex: Arc<Mutex<()>>,
+    ) -> Result<Guard<'_, K>, TryLockError<K, Guard<'_, K>>> {
+        let mut poisoned = false;
+        let guard = OwningHandle::try_new(mutex, |mutex: *const Mutex<()>| {
+            let mutex: &Mutex<()> = unsafe { &*mutex };
+            match mutex.try_lock() {
+                Ok(guard) => Ok(guard),
+                Err(std::sync::TryLockError::Poisoned(poison_error)) => {
+                    poisoned = true;
+                    Ok(poison_error.into_inner())
+                }
+                Err(std::sync::TryLockError::WouldBlock) => Err(TryLockError::WouldBlock),
+            }
+        })?;
+        if poisoned {
+            let guard = Guard::new(self, key.clone(), guard, true);
+            Err(TryLockError::Poisoned(PoisonError::LockPoisoned {
+                key,
+                guard,
+            }))
         } else {
             let guard = Guard::new(self, key, guard, false);
             Ok(guard)
@@ -512,4 +573,6 @@ mod tests {
         // Check that it got unpoisoned
         pool.lock(3).unwrap();
     }
+
+    // TODO Tests for try_lock
 }

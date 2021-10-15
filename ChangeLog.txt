@@ -1,5 +1,6 @@
 0.4.0 (unreleased)
 ------
+- Add LockPool::try_lock()
 
 0.3.0
 ------
