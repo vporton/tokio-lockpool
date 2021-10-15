@@ -5,16 +5,19 @@
 //! ```
 //! use lockpool::LockPool;
 //!
+//! # fn main() -> Result<(), lockpool::PoisonError<isize>> {
 //! let pool = LockPool::new();
-//! let guard1 = pool.lock(4).unwrap();
-//! let guard2 = pool.lock(5).unwrap();
+//! let guard1 = pool.lock(4)?;
+//! let guard2 = pool.lock(5)?;
 //!
 //! // This next line would cause a deadlock because `4` is already locked
-//! // let guard3 = pool.lock(4).unwrap();
+//! // let guard3 = pool.lock(4)?;
 //!
 //! // After dropping the corresponding guard, we can lock it again
 //! std::mem::drop(guard1);
-//! let guard3 = pool.lock(4).unwrap();
+//! let guard3 = pool.lock(4)?;
+//! # Ok(())
+//! # }
 //! ```
 //!
 //! You can use an arbitrary type to index locks by, as long as that type implements [PartialEq] + [Eq] + [Hash] + [Clone] + [Debug].
@@ -25,8 +28,11 @@
 //! #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 //! struct CustomLockKey(u32);
 //!
+//! # fn main() -> Result<(), lockpool::PoisonError<CustomLockKey>> {
 //! let pool = LockPool::new();
-//! let guard = pool.lock(CustomLockKey(4)).unwrap();
+//! let guard = pool.lock(CustomLockKey(4))?;
+//! # Ok(())
+//! # }
 //! ```
 //!
 //! Under the hood, a [LockPool] is a [HashMap] of [Mutex]es, with some logic making sure there aren't any race conditions when accessing the hash map.
