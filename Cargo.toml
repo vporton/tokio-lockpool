@@ -1,0 +1,19 @@
+[package]
+authors = ["Sebastian Messmer <messmer@cryfs.org>"]
+edition = "2018"
+name = "lockpool"
+version = "0.1.0"
+readme = "README.md"
+documentation = "https://docs.rs/lockpool"
+homepage = "https://github.com/smessmer/lockpool"
+repository = "https://github.com/smessmer/lockpool"
+license = "MIT OR Apache-2.0"
+keywords = ["concurrency", "thread", "locks", "mutex"]
+categories = ["asynchronous", "concurrency"]
+description = "This library offers a pool of locks where individual locks can be locked/unlocked by key"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+owning_ref = "^0.4.1"
