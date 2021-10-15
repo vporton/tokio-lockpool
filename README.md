@@ -18,7 +18,7 @@ let pool = LockPool::new();
 let guard1 = pool.lock(4)?;
 let guard2 = pool.lock(5)?;
 
-// This next line would cause a deadlock because `4` is already locked
+// This next line would cause a deadlock or panic because `4` is already locked on this thread
 // let guard3 = pool.lock(4)?;
 
 // After dropping the corresponding guard, we can lock it again

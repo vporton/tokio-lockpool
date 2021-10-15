@@ -1,5 +1,5 @@
 use owning_ref::OwningHandle;
-use std::fmt::Debug;
+use std::fmt::{self, Debug};
 use std::hash::Hash;
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -42,5 +42,14 @@ where
             .take()
             .expect("The self.guard field must always be set unless this was already destructed");
         self.pool._unlock(&self.key, guard);
+    }
+}
+
+impl<'a, K> Debug for Guard<'a, K>
+where
+    K: Eq + PartialEq + Hash + Clone + Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Guard({:?})", self.key)
     }
 }
