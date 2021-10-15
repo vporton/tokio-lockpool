@@ -6,6 +6,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use super::LockPool;
 
 /// A RAII implementation of a scoped lock for locks from a [LockPool]. When this structure is dropped (falls out of scope), the lock will be unlocked.
+#[must_use = "if unused the Mutex will immediately unlock"]
 pub struct Guard<'a, K>
 where
     K: Eq + PartialEq + Hash + Clone + Debug,

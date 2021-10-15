@@ -1,6 +1,7 @@
 0.4.0 (unreleased)
 ------
 - Add LockPool::try_lock()
+- Add #[must_use] to Guard
 
 0.3.0
 ------
