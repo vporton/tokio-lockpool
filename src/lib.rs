@@ -35,7 +35,7 @@
 //! # })().unwrap();
 //! ```
 //!
-//! Under the hood, a [LockPool] is a [HashMap] of [Mutex]es, with some logic making sure there aren't any race conditions when accessing the hash map.
+//! Under the hood, a [LockPool] is a [HashMap](std::collections::HashMap) of [Mutex](std::sync::Mutex)es, with some logic making sure there aren't any race conditions when accessing the hash map.
 
 mod error;
 mod guard;

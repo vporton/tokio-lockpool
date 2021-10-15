@@ -1,8 +1,10 @@
 2.0.0
 -----
+- Simplify PoisonError struct (bc breaking)
 - Add benchmarks to CI
 - Fix clippy warnings
-- Simplify PoisonError struct (bc breaking)
+- Add doc comments to error types
+- Fix some links to types in doc comments
 
 1.0.0
 ------
