@@ -1,3 +1,8 @@
+0.3.0 (unreleased)
+------
+- Don't panic when mutexes are poisoned, but return an Error
+- Restructure code
+
 0.2.0
 ------
 - Improve documentation

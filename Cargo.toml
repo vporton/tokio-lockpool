@@ -17,3 +17,4 @@ description = "This library offers a pool of locks where individual locks can be
 
 [dependencies]
 owning_ref = "^0.4.1"
+thiserror = "^1.0.29"
