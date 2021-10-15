@@ -26,7 +26,7 @@ std::mem::drop(guard1);
 let guard3 = pool.lock(4)?;
 ```
 
-You can use an arbitrary type to index locks by, as long as that type implements [PartialEq](https://docs.rs/tokenpool/latest/binary_layout/struct.PartialEq.html) + [Eq](https://docs.rs/tokenpool/latest/binary_layout/struct.Eq.html) + [Hash](https://docs.rs/tokenpool/latest/binary_layout/struct.Hash.html) + [Clone](https://docs.rs/tokenpool/latest/binary_layout/struct.Clone.html) + [Debug](https://docs.rs/tokenpool/latest/binary_layout/struct.Debug.html).
+You can use an arbitrary type to index locks by, as long as that type implements [PartialEq](https://docs.rs/lockpool/latest/lockpool/struct.PartialEq.html) + [Eq](https://docs.rs/lockpool/latest/lockpool/struct.Eq.html) + [Hash](https://docs.rs/lockpool/latest/lockpool/struct.Hash.html) + [Clone](https://docs.rs/lockpool/latest/lockpool/struct.Clone.html) + [Debug](https://docs.rs/lockpool/latest/lockpool/struct.Debug.html).
 
 ```rust
 use lockpool::LockPool;
@@ -38,6 +38,6 @@ let pool = LockPool::new();
 let guard = pool.lock(CustomLockKey(4))?;
 ```
 
-Under the hood, a [LockPool](https://docs.rs/tokenpool/latest/binary_layout/struct.LockPool.html) is a [HashMap](https://docs.rs/tokenpool/latest/binary_layout/struct.HashMap.html) of [Mutex](https://docs.rs/tokenpool/latest/binary_layout/struct.Mutex.html)es, with some logic making sure there aren't any race conditions when accessing the hash map.
+Under the hood, a [LockPool](https://docs.rs/lockpool/latest/lockpool/struct.LockPool.html) is a [HashMap](std::collections::HashMap) of [Mutex](std::sync::Mutex)es, with some logic making sure there aren't any race conditions when accessing the hash map.
 
 License: MIT OR Apache-2.0
