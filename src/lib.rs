@@ -50,6 +50,7 @@ pub use error::PoisonError;
 pub use guard::Guard;
 
 // TODO When a lock is poisoned, we should keep it in the map and keep it poisoned. Possibly with a way to unpoison it.
+// TODO Implement .try_lock()
 
 /// This is a pool of locks where individual locks can be locked/unlocked by key. It initially considers all keys as "unlocked", but they can be locked
 /// and if a second thread tries to acquire a lock for the same key, they will have to wait.
