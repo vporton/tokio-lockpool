@@ -60,15 +60,18 @@ pub use guard::Guard;
 /// use lockpool::LockPool;
 ///
 /// let pool = LockPool::new();
-/// let guard1 = pool.lock(4);
-/// let guard2 = pool.lock(5);
+/// # (|| -> Result<(), lockpool::PoisonError<_, _>> {
+/// let guard1 = pool.lock(4)?;
+/// let guard2 = pool.lock(5)?;
 ///
 /// // This next line would cause a deadlock or panic because `4` is already locked on this thread
-/// // let guard3 = pool.lock(4);
+/// // let guard3 = pool.lock(4)?;
 ///
 /// // After dropping the corresponding guard, we can lock it again
 /// std::mem::drop(guard1);
-/// let guard3 = pool.lock(4);
+/// let guard3 = pool.lock(4)?;
+/// # Ok(())
+/// # })().unwrap();
 /// ```
 ///
 pub struct LockPool<K>
@@ -128,15 +131,18 @@ where
     /// use lockpool::LockPool;
     ///
     /// let pool = LockPool::new();
-    /// let guard1 = pool.lock(4);
-    /// let guard2 = pool.lock(5);
+    /// # (|| -> Result<(), lockpool::PoisonError<_, _>> {
+    /// let guard1 = pool.lock(4)?;
+    /// let guard2 = pool.lock(5)?;
     ///
     /// // This next line would cause a deadlock or panic because `4` is already locked on this thread
-    /// // let guard3 = pool.lock(4);
+    /// // let guard3 = pool.lock(4)?;
     ///
     /// // After dropping the corresponding guard, we can lock it again
     /// std::mem::drop(guard1);
-    /// let guard3 = pool.lock(4);
+    /// let guard3 = pool.lock(4)?;
+    /// # Ok(())
+    /// # })().unwrap();
     /// ```
     pub fn lock(&self, key: K) -> Result<Guard<'_, K>, PoisonError<K, Guard<'_, K>>> {
         let mutex = self._load_or_insert_mutex_for_key(&key);
@@ -163,8 +169,9 @@ where
     /// use lockpool::{TryLockError, LockPool};
     ///
     /// let pool = LockPool::new();
-    /// let guard1 = pool.lock(4);
-    /// let guard2 = pool.lock(5);
+    /// # (|| -> Result<(), lockpool::PoisonError<_, _>> {
+    /// let guard1 = pool.lock(4)?;
+    /// let guard2 = pool.lock(5)?;
     ///
     /// // This next line would cause a deadlock or panic because `4` is already locked on this thread
     /// let guard3 = pool.try_lock(4);
@@ -172,7 +179,9 @@ where
     ///
     /// // After dropping the corresponding guard, we can lock it again
     /// std::mem::drop(guard1);
-    /// let guard3 = pool.lock(4);
+    /// let guard3 = pool.lock(4)?;
+    /// # Ok(())
+    /// # })().unwrap();
     /// ```
     pub fn try_lock(&self, key: K) -> Result<Guard<'_, K>, TryLockError<K, Guard<'_, K>>> {
         let mutex = self._load_or_insert_mutex_for_key(&key);
