@@ -1,10 +1,63 @@
-//! This library offers a pool of locks where individual locks can be locked/unlocked by key
+//! This library offers a pool of locks where individual locks can be locked/unlocked by key.
+//! It initially considers all keys as "unlocked", but they can be locked
+//! and if a second thread tries to acquire a lock for the same key, they will have to wait.
+//!
+//! ```
+//! use lockpool::LockPool;
+//!
+//! let pool = LockPool::new();
+//! let guard1 = pool.lock(4);
+//! let guard2 = pool.lock(5);
+//!
+//! // This next line would cause a deadlock because `4` is already locked
+//! // let guard3 = pool.lock(4);
+//!
+//! // After dropping the corresponding guard, we can lock it again
+//! std::mem::drop(guard1);
+//! let guard3 = pool.lock(4);
+//! ```
+//!
+//! You can use an arbitrary type to index locks by, as long as that type implements [PartialEq] + [Eq] + [Hash] + [Clone].
+//!
+//! ```
+//! use lockpool::LockPool;
+//!
+//! #[derive(PartialEq, Eq, Hash, Clone)]
+//! struct CustomLockKey(u32);
+//!
+//! let pool = LockPool::new();
+//! let guard = pool.lock(CustomLockKey(4));
+//! ```
+//!
+//! Under the hood, a [LockPool] is a [HashMap] of [Mutex]es, with some logic making sure there aren't any race conditions when accessing the hash map.
 
 use owning_ref::OwningHandle;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::{Arc, Mutex, MutexGuard};
 
+/// This is a pool of locks where individual locks can be locked/unlocked by key. It initially considers all keys as "unlocked", but they can be locked
+/// and if a second thread tries to acquire a lock for the same key, they will have to wait.
+///
+/// Under the hood, a [LockPool] is a [HashMap] of [Mutex]es, with some logic making sure there aren't any race conditions when accessing the hash map.
+///
+/// Example:
+/// -----
+/// ```
+/// use lockpool::LockPool;
+///
+/// let pool = LockPool::new();
+/// let guard1 = pool.lock(4);
+/// let guard2 = pool.lock(5);
+///
+/// // This next line would cause a deadlock because `4` is already locked
+/// // let guard3 = pool.lock(4);
+///
+/// // After dropping the corresponding guard, we can lock it again
+/// std::mem::drop(guard1);
+/// let guard3 = pool.lock(4);
+/// ```
+///
 pub struct LockPool<K>
 where
     K: Eq + PartialEq + Hash + Clone,
@@ -27,14 +80,21 @@ impl<K> LockPool<K>
 where
     K: Eq + PartialEq + Hash + Clone,
 {
+    /// Create a new lock pool where no lock is locked
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Return the number of locked locks
     pub fn num_locked(&self) -> usize {
         self.currently_locked.lock().expect("Poisoned mutex").len()
     }
 
+    /// Lock a lock by key.
+    ///
+    /// If the lock with this key is currently locked by a different thread, then the current thread blocks until it becomes available.
+    /// Upon returning, the thread is the only thread with the lock held. A RAII guard is returned to allow scoped unlock
+    /// of the lock. When the guard goes out of scope, the lock will be unlocked.
     pub fn lock(&self, key: K) -> Guard<'_, K> {
         // TODO Return Result instead of expect()
         let mut currently_locked = self.currently_locked.lock().expect("Poisoned mutex");
@@ -67,7 +127,7 @@ where
         }
     }
 
-    fn unlock(&self, key: &K, guard: OwningHandle<Arc<Mutex<()>>, MutexGuard<'_, ()>>) {
+    fn _unlock(&self, key: &K, guard: OwningHandle<Arc<Mutex<()>>, MutexGuard<'_, ()>>) {
         let mut currently_locked = self.currently_locked.lock().expect("Poisoned mutex");
         let mutex: &Arc<Mutex<()>> = currently_locked
             .get(key)
@@ -97,6 +157,7 @@ where
     }
 }
 
+/// A RAII implementation of a scoped lock for locks from a [LockPool]. When this structure is dropped (falls out of scope), the lock will be unlocked.
 pub struct Guard<'a, K>
 where
     K: Eq + PartialEq + Hash + Clone,
@@ -132,7 +193,7 @@ where
             .guard
             .take()
             .expect("The self.guard field must always be set unless this was already destructed");
-        self.pool.unlock(&self.key, guard);
+        self.pool._unlock(&self.key, guard);
     }
 }
 
