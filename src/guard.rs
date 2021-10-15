@@ -41,6 +41,6 @@ where
             .guard
             .take()
             .expect("The self.guard field must always be set unless this was already destructed");
-        self.pool._unlock(&self.key, guard).unwrap();
+        self.pool._unlock(&self.key, guard);
     }
 }

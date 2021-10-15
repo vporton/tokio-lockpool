@@ -101,17 +101,9 @@ where
         Self::default()
     }
 
-    fn _currently_locked(
-        &self,
-    ) -> Result<MutexGuard<'_, HashMap<K, Arc<Mutex<()>>>>, PoisonError<K>> {
-        self.currently_locked
-            .lock()
-            .map_err(|_| PoisonError::PoolMutexPoisoned)
-    }
-
     /// Return the number of locked locks
-    pub fn num_locked(&self) -> Result<usize, PoisonError<K>> {
-        Ok(self._currently_locked()?.len())
+    pub fn num_locked(&self) -> usize {
+        self._currently_locked().len()
     }
 
     /// Lock a lock by key.
@@ -120,7 +112,7 @@ where
     /// Upon returning, the thread is the only thread with the lock held. A RAII guard is returned to allow scoped unlock
     /// of the lock. When the guard goes out of scope, the lock will be unlocked.
     pub fn lock(&self, key: K) -> Result<Guard<'_, K>, PoisonError<K>> {
-        let mut currently_locked = self._currently_locked()?;
+        let mut currently_locked = self._currently_locked();
         if let Some(mutex) = currently_locked.get_mut(&key).map(|a| Arc::clone(a)) {
             // Drop the global lock so other threads can enter this and lock their keys while we're waiting
             std::mem::drop(currently_locked);
@@ -139,21 +131,23 @@ where
         }
     }
 
+    fn _currently_locked(&self) -> MutexGuard<'_, HashMap<K, Arc<Mutex<()>>>> {
+        self.currently_locked
+            .lock()
+            .expect("The global mutex protecting the lock pool is poisoned. This shouldn't happen since there shouldn't be any user code running while this lock is held so no thread should ever panic with it")
+    }
+
     fn _lock<'a>(&self, key: K, mutex: Arc<Mutex<()>>) -> Result<Guard<'_, K>, PoisonError<K>> {
         let guard = OwningHandle::try_new(mutex, |mutex: *const Mutex<()>| {
             let mutex: &Mutex<()> = unsafe { &*mutex };
             mutex.lock()
         })
-        .map_err(|_| PoisonError::KeyPoisoned(key.clone()))?;
+        .map_err(|_| PoisonError::LockPoisoned(key.clone()))?;
         Ok(Guard::new(self, key, guard))
     }
 
-    fn _unlock(
-        &self,
-        key: &K,
-        guard: OwningHandle<Arc<Mutex<()>>, MutexGuard<'_, ()>>,
-    ) -> Result<(), PoisonError<K>> {
-        let mut currently_locked = self._currently_locked()?;
+    fn _unlock(&self, key: &K, guard: OwningHandle<Arc<Mutex<()>>, MutexGuard<'_, ()>>) {
+        let mut currently_locked = self._currently_locked();
         let mutex: &Arc<Mutex<()>> = currently_locked
             .get(key)
             .expect("This entry must exist or the guard passed in as a parameter shouldn't exist");
@@ -179,8 +173,6 @@ where
                 "We just got this entry above from the hash map, it cannot have vanished since then"
             );
         }
-
-        Ok(())
     }
 }
 
@@ -194,30 +186,30 @@ mod tests {
     #[test]
     fn simple_lock_unlock() {
         let pool = LockPool::new();
-        assert_eq!(0, pool.num_locked().unwrap());
+        assert_eq!(0, pool.num_locked());
         let guard = pool.lock(4).unwrap();
-        assert_eq!(1, pool.num_locked().unwrap());
+        assert_eq!(1, pool.num_locked());
         std::mem::drop(guard);
-        assert_eq!(0, pool.num_locked().unwrap());
+        assert_eq!(0, pool.num_locked());
     }
 
     #[test]
     fn multi_lock_unlock() {
         let pool = LockPool::new();
-        assert_eq!(0, pool.num_locked().unwrap());
+        assert_eq!(0, pool.num_locked());
         let guard1 = pool.lock(1).unwrap();
-        assert_eq!(1, pool.num_locked().unwrap());
+        assert_eq!(1, pool.num_locked());
         let guard2 = pool.lock(2).unwrap();
-        assert_eq!(2, pool.num_locked().unwrap());
+        assert_eq!(2, pool.num_locked());
         let guard3 = pool.lock(3).unwrap();
-        assert_eq!(3, pool.num_locked().unwrap());
+        assert_eq!(3, pool.num_locked());
 
         std::mem::drop(guard2);
-        assert_eq!(2, pool.num_locked().unwrap());
+        assert_eq!(2, pool.num_locked());
         std::mem::drop(guard1);
-        assert_eq!(1, pool.num_locked().unwrap());
+        assert_eq!(1, pool.num_locked());
         std::mem::drop(guard3);
-        assert_eq!(0, pool.num_locked().unwrap());
+        assert_eq!(0, pool.num_locked());
     }
 
     // Launch a thread that
@@ -265,7 +257,7 @@ mod tests {
         child.join().unwrap();
         assert_eq!(1, counter.load(Ordering::SeqCst));
 
-        assert_eq!(0, pool.num_locked().unwrap());
+        assert_eq!(0, pool.num_locked());
     }
 
     #[test]
@@ -302,7 +294,12 @@ mod tests {
         child2.join().unwrap();
         assert_eq!(2, counter.load(Ordering::SeqCst));
 
-        assert_eq!(0, pool.num_locked().unwrap());
+        assert_eq!(0, pool.num_locked());
+    }
+
+    #[test]
+    fn poisoned_pool_mutex() {
+        // let pool = Arc::new(LockPool::new());
     }
 
     // TODO Add test cases for poisoned pool locks
