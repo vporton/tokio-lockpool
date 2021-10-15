@@ -28,7 +28,7 @@ pub fn single_thread_lock_unlock(c: &mut Criterion) {
     g.finish();
 }
 
-fn spawn_threads(num: usize, func: impl Fn(usize) -> () + Send + Sync) {
+fn spawn_threads(num: usize, func: impl Fn(usize) + Send + Sync) {
     thread::scope(|s| {
         for _ in 0..num {
             s.spawn(|_| func(num));

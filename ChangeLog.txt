@@ -1,3 +1,7 @@
+1.0.1
+-----
+- Fix clippy warnings
+
 1.0.0
 ------
 - Add LockPool::try_lock()
