@@ -1,5 +1,6 @@
 0.3.0 (unreleased)
 ------
+- Correctly poison the locks when a thread holding one panics
 - Don't panic when mutexes are poisoned, but return an Error
 - Restructure code
 
