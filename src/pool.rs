@@ -223,7 +223,7 @@ where
         });
         if poisoned {
             let guard = Guard::new(self, key.clone(), guard, true);
-            Err(PoisonError::LockPoisoned { key, guard })
+            Err(PoisonError { key, guard })
         } else {
             let guard = Guard::new(self, key, guard, false);
             Ok(guard)
@@ -249,10 +249,7 @@ where
         })?;
         if poisoned {
             let guard = Guard::new(self, key.clone(), guard, true);
-            Err(TryLockError::Poisoned(PoisonError::LockPoisoned {
-                key,
-                guard,
-            }))
+            Err(TryLockError::Poisoned(PoisonError { key, guard }))
         } else {
             let guard = Guard::new(self, key, guard, false);
             Ok(guard)
@@ -415,7 +412,7 @@ mod tests {
         error: &PoisonError<isize, Guard<'_, isize>>,
     ) {
         match error {
-            PoisonError::LockPoisoned {
+            PoisonError {
                 key: actual_key, ..
             } => {
                 assert_eq!(expected_key, *actual_key);
@@ -428,7 +425,7 @@ mod tests {
         error: &TryLockError<isize, Guard<'_, isize>>,
     ) {
         match error {
-            TryLockError::Poisoned(PoisonError::LockPoisoned {
+            TryLockError::Poisoned(PoisonError {
                 key: actual_key, ..
             }) => {
                 assert_eq!(expected_key, *actual_key);

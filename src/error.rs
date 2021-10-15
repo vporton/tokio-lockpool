@@ -2,9 +2,10 @@ use std::fmt::Debug;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub enum PoisonError<K, G> {
-    #[error("The lock with the key `{key:?}` couldn't be acquired because another thread panicked while holding this lock")]
-    LockPoisoned { key: K, guard: G },
+#[error("The lock with the key `{key:?}` couldn't be acquired because another thread panicked while holding this lock")]
+pub struct PoisonError<K, G> {
+    pub key: K,
+    pub(super) guard: G,
 }
 
 #[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy)]

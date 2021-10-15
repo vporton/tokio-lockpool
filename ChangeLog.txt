@@ -2,6 +2,7 @@
 -----
 - Add benchmarks to CI
 - Fix clippy warnings
+- Simplify PoisonError struct (bc breaking)
 
 1.0.0
 ------
