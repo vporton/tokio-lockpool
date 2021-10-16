@@ -37,6 +37,8 @@
 //!
 //! Under the hood, a [LockPool] is a [HashMap](std::collections::HashMap) of [Mutex](std::sync::Mutex)es, with some logic making sure there aren't any race conditions when accessing the hash map.
 
+#![deny(missing_docs)]
+
 mod error;
 mod guard;
 mod pool;

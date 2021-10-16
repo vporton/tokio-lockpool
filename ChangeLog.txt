@@ -1,12 +1,13 @@
 2.0.1 (unreleased)
 -----
 - Fix links in README
+- Fix clippy warnings
+- Add more documentation and enforce documentation existence with a #![deny(missing_docs)] lint
 
 2.0.0
 -----
 - Simplify PoisonError struct (bc breaking)
 - Add benchmarks to CI
-- Fix clippy warnings
 - Add doc comments to error types
 - Fix some links to types in doc comments
 
