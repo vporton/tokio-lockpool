@@ -37,6 +37,8 @@ fn spawn_threads(num: usize, func: impl Fn(usize) + Send + Sync) {
     .unwrap();
 }
 
+// Disable for arm since that's too slow on CI
+#[cfg(target_arch = "x86_64")]
 pub fn multi_thread_lock_unlock(c: &mut Criterion) {
     const NUM_THREADS: usize = 500;
     const NUM_LOCKS_PER_THREAD: usize = 1000;
