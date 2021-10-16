@@ -10,3 +10,10 @@
 {{readme}}
 
 License: {{license}}
+
+[Eq]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
+[Hash]: https://doc.rust-lang.org/std/hash/macro.Hash.html
+[Clone]: https://doc.rust-lang.org/std/clone/trait.Clone.html
+[Debug]: https://doc.rust-lang.org/std/fmt/trait.Debug.html
+[LockPool]: https://docs.rs/lockpool/latest/lockpool/struct.LockPool.html
+[PartialEq]: https://doc.rust-lang.org/std/cmp/trait.PartialEq.html
