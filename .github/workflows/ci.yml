@@ -187,21 +187,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: bench
-  bench_arm_stable_release:
-    name: Bench (ARM, stable, release)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: armv5te-unknown-linux-gnueabi
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: bench
-          args: --target armv5te-unknown-linux-gnueabi
   clippy_check:
     name: Linter (clippy)
     runs-on: ubuntu-latest
