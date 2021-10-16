@@ -659,17 +659,11 @@ mod tests {
 
         poison_lock(&pool, 3);
 
-        // Check that it is actually poisoned
-        {
-            let err = pool.lock(3).unwrap_err();
-            assert_is_lock_poisoned_error(3, &err);
-        }
+        let _err_guard = pool.lock(3).unwrap_err();
 
-        pool.unpoison(3).unwrap();
+        // _err_guard keeps it locked
 
-        // Check that it got unpoisoned
-        {
-            let _g = pool.lock(3).unwrap();
-        }
+        let err = pool.unpoison(3).unwrap_err();
+        assert!(matches!(err, UnpoisonError::OtherThreadsBlockedOnMutex));
     }
 }
