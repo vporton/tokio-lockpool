@@ -29,7 +29,7 @@ pub enum UnpoisonError {
 pub enum TryLockError<K, G> {
     /// The lock is poisoned, see [PoisonError]
     #[error(transparent)]
-    Poisoned(#[from] PoisonError<K, G>),
+    Poisoned(PoisonError<K, G>),
 
     /// The lock could not be acquired at this time because the operation would otherwise block
     #[error(
