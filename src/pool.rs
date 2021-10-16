@@ -411,13 +411,7 @@ mod tests {
         expected_key: isize,
         error: &PoisonError<isize, Guard<'_, isize>>,
     ) {
-        match error {
-            PoisonError {
-                key: actual_key, ..
-            } => {
-                assert_eq!(expected_key, *actual_key);
-            }
-        }
+        assert_eq!(expected_key, error.key);
     }
 
     fn assert_is_try_lock_poisoned_error(
