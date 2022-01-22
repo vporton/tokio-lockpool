@@ -16,6 +16,7 @@ description = "This library offers a pool of locks where individual locks can be
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tokio = { version = "1.15", features = ["sync"] }
 owning_ref = "^0.4.1"
 thiserror = "^1.0.29"
 

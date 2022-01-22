@@ -2,7 +2,8 @@ use owning_ref::OwningHandle;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, MutexGuard};
+use tokio::sync::Mutex;
 
 use super::{Guard, PoisonError, TryLockError, UnpoisonError};
 

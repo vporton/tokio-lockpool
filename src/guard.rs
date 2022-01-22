@@ -1,7 +1,8 @@
 use owning_ref::OwningHandle;
 use std::fmt::{self, Debug};
 use std::hash::Hash;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, MutexGuard};
+use tokio::sync::Mutex;
 
 use super::LockPool;
 

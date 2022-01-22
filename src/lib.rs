@@ -39,6 +39,8 @@
 
 #![deny(missing_docs)]
 
+extern crate tokio;
+
 mod error;
 mod guard;
 mod pool;
