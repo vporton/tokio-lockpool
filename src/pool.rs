@@ -138,7 +138,7 @@ where
     /// # Ok(())
     /// # })().unwrap();
     /// ```
-    pub fn try_lock(&self, key: K) -> Result<Guard<'_, K>, TryLockError<K, Guard<'_, K>>> {
+    pub fn try_lock(&self, key: K) -> Result<Guard<'_, K>, TryLockError> {
         let mutex = self._load_or_insert_mutex_for_key(&key);
         self._try_lock(key, mutex)
     }
@@ -182,7 +182,7 @@ where
         &self,
         key: K,
         mutex: Arc<Mutex<()>>,
-    ) -> Result<Guard<'_, K>, TryLockError<K, Guard<'_, K>>> {
+    ) -> Result<Guard<'_, K>, TryLockError> {
         let guard = OwningHandle::try_new(mutex, |mutex: *const Mutex<()>| {
             let mutex: &Mutex<()> = unsafe { &*mutex };
             match mutex.try_lock() {
