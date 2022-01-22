@@ -6,9 +6,9 @@
 //! use lockpool::LockPool;
 //!
 //! let pool = LockPool::new();
-//! # (|| -> Result<(), lockpool::PoisonError<_, _>> {
-//! let guard1 = pool.lock(4)?;
-//! let guard2 = pool.lock(5)?;
+//! # (|| -> () {
+//! let guard1 = pool.lock(4).await;
+//! let guard2 = pool.lock(5).await;
 //!
 //! // This next line would cause a deadlock or panic because `4` is already locked on this thread
 //! // let guard3 = pool.lock(4)?;
@@ -29,7 +29,7 @@
 //! struct CustomLockKey(u32);
 //!
 //! let pool = LockPool::new();
-//! # (|| -> Result<(), lockpool::PoisonError<_, _>> {
+//! # (|| -> () {
 //! let guard = pool.lock(CustomLockKey(4))?;
 //! # Ok(())
 //! # })().unwrap();
@@ -45,6 +45,6 @@ mod error;
 mod guard;
 mod pool;
 
-pub use error::{PoisonError, TryLockError, UnpoisonError};
+pub use error::TryLockError;
 pub use guard::Guard;
 pub use pool::LockPool;

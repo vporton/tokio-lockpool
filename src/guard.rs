@@ -15,7 +15,6 @@ where
     pool: &'a LockPool<K>,
     key: K,
     guard: Option<OwningHandle<Arc<Mutex<()>>, MutexGuard<'a, ()>>>,
-    poisoned: bool,
 }
 
 impl<'a, K> Guard<'a, K>
@@ -26,13 +25,11 @@ where
         pool: &'a LockPool<K>,
         key: K,
         guard: OwningHandle<Arc<Mutex<()>>, MutexGuard<'a, ()>>,
-        poisoned: bool,
     ) -> Self {
         Self {
             pool,
             key,
             guard: Some(guard),
-            poisoned,
         }
     }
 }
@@ -46,7 +43,7 @@ where
             .guard
             .take()
             .expect("The self.guard field must always be set unless this was already destructed");
-        self.pool._unlock(&self.key, guard, self.poisoned);
+        self.pool._unlock(&self.key, guard);
     }
 }
 
